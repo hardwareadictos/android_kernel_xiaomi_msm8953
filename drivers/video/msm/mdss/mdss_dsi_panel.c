@@ -495,7 +495,6 @@ int mdss_dsi_panel_reset(struct mdss_panel_data *pdata, int enable)
 
 		if ((panel_suspend_reset_flag == 2) || ((panel_suspend_reset_flag == 3) && (ft8716_gesture_func_on == 0))) {
 			if (ft8716_suspend || (panel_suspend_reset_flag == 2)) {
-				printk("set rst \n");
 				gpio_set_value((ctrl_pdata->rst_gpio), 1);
 				mdelay(10);
 				gpio_set_value((ctrl_pdata->rst_gpio), 0);
@@ -1104,6 +1103,7 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 	if (ctrl->off_cmds.cmd_cnt)
 		mdss_dsi_panel_cmds_send(ctrl, &ctrl->off_cmds, CMD_REQ_COMMIT);
 
+	mdss_dsi_panel_off_hdmi(ctrl, pinfo);
 	if (ctrl->ds_registered && pinfo->is_pluggable) {
 		mdss_dba_utils_video_off(pinfo->dba_data);
 		mdss_dba_utils_hdcp_enable(pinfo->dba_data, false);
