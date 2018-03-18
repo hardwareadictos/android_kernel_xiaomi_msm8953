@@ -389,11 +389,6 @@ static irqreturn_t ft5435_ts_interrupt(int irq, void *dev_id)
 			break;
 		input_mt_slot(ip_dev, id);
 
-		if (status==FT_TOUCH_DOWN)
-			printk("[FTS]Down pid[%d]:[%d,%d]\n",id,x,y);
-		else if (status==1)
-			printk("[FTS]Up pid[%d]:[%d,%d]\n",id,x,y);
-
 		if ( x < data->pdata->panel_maxx && y < data->pdata->panel_maxy ) {
 			input_mt_slot(ip_dev, id);
 			if (status == FT_TOUCH_DOWN || status == FT_TOUCH_CONTACT) {
@@ -620,8 +615,8 @@ static int ft5435_ts_pinctrl_select(struct ft5435_ts_data *ft5435_data,
 static int ft5435_ts_suspend(struct device *dev)
 {
 	struct ft5435_ts_data *data = g_ft5435_ts_data;
-//	char i;
-//	u8 state = -1;
+	char i;
+	u8 state = -1;
 	u8 reg_addr;
 	u8 reg_value;
 
@@ -659,6 +654,19 @@ static int ft5435_ts_suspend(struct device *dev)
 		}
 	} else {
 		printk("i2c read OK , no rst\n");
+	}
+
+	if (gpio_is_valid(data->pdata->reset_gpio)) {
+		for (i = 0; i < 10; i++) {
+			ft5x0x_write_reg(data->client, 0xa5, 0x03);
+			ft5x0x_read_reg(data->client, 0xa5, &state);
+			if ((state != 0) && (state != 1)) {
+				printk("[FTS]Ft5435 TPDwrite  OK [%d]\n", i);
+				break;
+			} else {
+				printk("[FTS]Ft5435 TPDwrite  Error[%d]\n", i);
+			}
+		}
 	}
 
 	data->suspended = true;
